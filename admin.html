@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GALAXY — Админ-панель</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-deep: #070b14;
+      --bg-dark: #0d1220;
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-primary: #f1f5ff;
+      --text-muted: #9aa8c7;
+      --accent-1: #a855f7;
+      --accent-2: #ec4899;
+      --accent-3: #22d3ee;
+      --accent-4: #f59e0b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --radius: 18px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+    button { cursor: pointer; border: none; background: none; }
+
+    /* ========== SHARED ========== */
+    .hidden { display: none !important; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(110deg, var(--accent-1), var(--accent-2));
+      color: #fff;
+      box-shadow: 0 6px 24px rgba(168, 85, 247, 0.3);
+    }
+    .btn-primary:hover { box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4); transform: translateY(-1px); }
+    .btn-ghost {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.08); }
+    .btn-danger {
+      background: linear-gradient(110deg, #ef4444, #b91c1c);
+      color: #fff;
+      box-shadow: 0 6px 24px rgba(239,68,68,0.3);
+    }
+    .btn-danger:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(239,68,68,0.45); }
+    .icon-btn {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-1);
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+    }
+    select option { background: var(--bg-dark); color: var(--text-primary); }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-field { margin-bottom: 16px; }
+
+    /* ========== LOGIN ========== */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 200;
+      background: var(--bg-deep);
+      overflow: hidden;
+      padding: 20px;
+    }
+    .login-orb {
+      position: absolute;
+      width: 640px; height: 640px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--accent-1), var(--accent-2), var(--accent-3), var(--accent-4), var(--accent-1));
+      filter: blur(130px);
+      opacity: 0.25;
+      animation: orbRotate 24s linear infinite;
+    }
+    @keyframes orbRotate { to { transform: rotate(360deg); } }
+    .login-card {
+      position: relative;
+      z-index: 2;
+      width: min(430px, 100%);
+      background: rgba(13, 18, 32, 0.78);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 36px 30px;
+      backdrop-filter: blur(28px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+      animation: fadeUp 0.6s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .brand-mark {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      font-weight: 900;
+      font-size: 1.25rem;
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+    }
+    .login-brand h2 { font-size: 1.15rem; }
+    .login-brand p { font-size: 0.78rem; color: var(--text-muted); }
+    .login-demo {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--glass-border);
+    }
+    .login-demo > p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .role-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .role-chips button {
+      padding: 7px 14px;
+      border-radius: 100px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .role-chips button:hover {
+      background: linear-gradient(110deg, var(--accent-1), var(--accent-2));
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* ========== APP LAYOUT ========== */
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: rgba(10, 14, 24, 0.85);
+      border-right: 1px solid var(--glass-border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      backdrop-filter: blur(20px);
+      z-index: 90;
+    }
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px 24px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .sidebar-brand .brand-mark { width: 38px; height: 38px; font-size: 1.05rem; }
+    .sidebar-brand strong { display: block; font-size: 0.95rem; }
+    .sidebar-brand small { display: block; font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.05em; }
+
+    .nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 11px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .nav-item.active {
+      background: linear-gradient(110deg, rgba(168,85,247,0.18), rgba(236,72,153,0.12));
+      color: var(--text-primary);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .nav-item.active .nav-icon { filter: drop-shadow(0 0 6px rgba(168,85,247,0.7)); }
+    .nav-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+
+    .sidebar-user {
+      padding-top: 16px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-3), var(--accent-1));
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-name { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-user-role { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ========== MAIN ========== */
+    .main { min-width: 0; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--glass-border);
+      background: rgba(7, 11, 20, 0.7);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--glass-border);
+    }
+    .role-badge::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .content { padding: 32px; flex: 1; }
+
+    /* ========== DASHBOARD ========== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 22px 22px 20px;
+      backdrop-filter: blur(14px);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease backwards;
+    }
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: var(--stat-color, var(--accent-1));
+      filter: blur(40px);
+      opacity: 0.35;
+    }
+    .stat-label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .stat-value {
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1;
+      position: relative;
+    }
+    .stat-delta { font-size: 0.76rem; color: var(--success); margin-top: 8px; position: relative; }
+
+    .panel {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .panel-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .panel-title { font-size: 0.95rem; font-weight: 700; }
+    .panel-body { padding: 22px; }
+
+    .chart-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .chart-row:last-child { margin-bottom: 0; }
+    .chart-label { width: 100px; font-size: 0.82rem; color: var(--text-muted); flex-shrink: 0; }
+    .chart-bar {
+      flex: 1;
+      height: 8px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .chart-bar > div {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+      transition: width 0.8s cubic-bezier(.22,1,.36,1);
+    }
+    .chart-value { width: 32px; text-align: right; font-size: 0.82rem; font-weight: 700; }
+
+    /* ========== TOOLBAR ========== */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .toolbar .search {
+      flex: 1;
+      min-width: 180px;
+      position: relative;
+    }
+    .toolbar .search input { padding-left: 38px; }
+    .toolbar .search::before {
+      content: '🔍';
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      opacity: 0.6;
+    }
+    .toolbar select { width: auto; min-width: 140px; }
+
+    /* ========== TABLE ========== */
+    .table-wrap {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+    }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead { background: rgba(0,0,0,0.25); }
+    .data-table th {
+      text-align: left;
+      padding: 14px 18px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .data-table td {
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr { transition: background 0.15s ease; }
+    .data-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .data-table td strong { font-weight: 600; display: block; }
+    .data-table td small { color: var(--text-muted); font-size: 0.76rem; display: block; margin-top: 2px; }
+    .cell-actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .cell-actions .icon-btn { width: 32px; height: 32px; font-size: 0.85rem; border-radius: 8px; }
+    .cell-actions .icon-btn.del:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .tag-events { background: rgba(168,85,247,0.15); color: #c4b5fd; }
+    .tag-promo { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .tag-bowling { background: rgba(34,211,238,0.15); color: #67e8f9; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .status-pill::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .status-published { color: var(--success); }
+    .status-draft { color: var(--accent-4); }
+    .status-active { color: var(--success); }
+    .status-blocked { color: var(--danger); }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-icon { font-size: 2.6rem; opacity: 0.5; margin-bottom: 10px; }
+
+    /* ========== ROLES ========== */
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .role-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease;
+    }
+    .role-card:hover { transform: translateY(-3px); }
+    .role-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--role-color);
+    }
+    .role-card-name {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--role-color);
+    }
+    .role-card-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px; }
+    .role-card-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 100px;
+    }
+
+    .perm-table { width: 100%; border-collapse: collapse; }
+    .perm-table th, .perm-table td {
+      padding: 12px 14px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.84rem;
+    }
+    .perm-table th:first-child, .perm-table td:first-child { text-align: left; }
+    .perm-table thead th {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+      background: rgba(0,0,0,0.2);
+    }
+    .perm-yes { color: var(--success); font-weight: 700; }
+    .perm-no { color: rgba(255,255,255,0.15); }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      display: grid;
+      place-items: center;
+      z-index: 300;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      width: min(520px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--bg-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      animation: modalIn 0.3s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .modal-header h3 { font-size: 1.05rem; font-weight: 700; }
+    .modal-body { padding: 22px 24px; }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* ========== TOAST ========== */
+    .toast-wrap {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 400;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: rgba(13, 18, 32, 0.95);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      font-size: 0.86rem;
+      font-weight: 500;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(.22,1,.36,1);
+      border-left: 3px solid var(--accent-1);
+      max-width: 340px;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
+
+    /* ========== HAMBURGER ========== */
+    .hamburger {
+      display: none;
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      place-items: center;
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 80;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        left: 0; top: 0; bottom: 0;
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(.22,1,.36,1);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.show { display: block; }
+      .hamburger { display: grid; }
+      .topbar { padding: 14px 20px; }
+      .topbar-title { font-size: 1rem; }
+      .content { padding: 20px; }
+      .role-badge { display: none; }
+    }
+    @media (max-width: 600px) {
+      .data-table th:nth-child(3),
+      .data-table td:nth-child(3) { display: none; }
+      .modal { border-radius: 16px; }
+      .toolbar select { min-width: 120px; font-size: 0.82rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== LOGIN ==================== -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-orb"></div>
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="brand-mark">G</span>
+        <div>
+          <h2>GALAXY Admin</h2>
+          <p>Панель управления контентом</p>
+        </div>
+      </div>
+      <form id="loginForm">
+        <div class="form-field">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" value="admin@galaxy.ru" required autocomplete="username" />
+        </div>
+        <div class="form-field">
+          <label for="loginPassword">Пароль</label>
+          <input type="password" id="loginPassword" value="admin123" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:13px;">Войти в панель</button>
+      </form>
+      <div class="login-demo">
+        <p>Быстрый вход (демо)</p>
+        <div class="role-chips" id="quickLogin">
+          <button data-role="superadmin">Super Admin</button>
+          <button data-role="admin">Администратор</button>
+          <button data-role="editor">Редактор</button>
+          <button data-role="moderator">Модератор</button>
+          <button data-role="viewer">Наблюдатель</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== APP ==================== -->
+  <div id="app" class="app hidden">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-mark">G</span>
+        <div>
+          <strong>GALAXY</strong>
+          <small>Admin Panel</small>
+        </div>
+      </div>
+      <nav class="nav" id="navMenu"></nav>
+      <div class="sidebar-user" id="sidebarUser"></div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <button class="hamburger" id="hamburger">☰</button>
+          <div class="topbar-title" id="pageTitle">Дашборд</div>
+        </div>
+        <div class="topbar-actions">
+          <span class="role-badge" id="roleBadge"></span>
+          <button class="icon-btn" id="logoutBtn" title="Выйти">⏻</button>
+        </div>
+      </header>
+      <main class="content" id="viewRoot"></main>
+    </div>
+  </div>
+
+  <!-- ==================== GLOBAL UI ==================== -->
+  <div class="toast-wrap" id="toastWrap"></div>
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <script>
+    /* ============================================================
+       ROLES & PERMISSIONS
+       ============================================================ */
+    const ALL_PERMS = [
+      { key: 'dashboard',    label: 'Дашборд' },
+      { key: 'news.view',    label: 'Просмотр новостей' },
+      { key: 'news.create',  label: 'Создание новостей' },
+      { key: 'news.edit',    label: 'Редактирование новостей' },
+      { key: 'news.delete',  label: 'Удаление новостей' },
+      { key: 'users.view',   label: 'Просмотр пользователей' },
+      { key: 'users.create', label: 'Создание пользователей' },
+      { key: 'users.edit',   label: 'Редактирование пользователей' },
+      { key: 'users.delete', label: 'Удаление пользователей' },
+      { key: 'roles.view',   label: 'Просмотр ролей' },
+      { key: 'settings',     label: 'Настройки системы' }
+    ];
+
+    const ROLES = {
+      superadmin: {
+        name: 'Super Admin', color: '#a855f7',
+        desc: 'Полный доступ ко всем разделам и операциям',
+        perms: ALL_PERMS.map(p => p.key)
+      },
+      admin: {
+        name: 'Администратор', color: '#22d3ee',
+        desc: 'Управление новостями и пользователями',
+        perms: ['dashboard','news.view','news.create','news.edit','news.delete',
+                'users.view','users.create','users.edit','roles.view']
+      },
+      editor: {
+        name: 'Редактор', color: '#ec4899',
+        desc: 'Создание и публикация новостей',
+        perms: ['dashboard','news.view','news.create','news.edit','news.delete']
+      },
+      moderator: {
+        name: 'Модератор', color: '#f59e0b',
+        desc: 'Просмотр и правка новостей без удаления',
+        perms: ['dashboard','news.view','news.edit']
+      },
+      viewer: {
+        name: 'Наблюдатель', color: '#94a3b8',
+        desc: 'Только чтение данных',
+        perms: ['dashboard','news.view','roles.view']
+      }
+    };
+
+    const CATEGORIES = { events: 'События', promo: 'Акции', bowling: 'Боулинг' };
+    const STATUS = { published: 'Опубликовано', draft: 'Черновик' };
+    const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+
+    /* ============================================================
+       STORAGE HELPERS
+       ============================================================ */
+    const KEYS = { news: 'galaxy_news', users: 'galaxy_users', session: 'galaxy_session' };
+
+    function getNews() {
+      const raw = localStorage.getItem(KEYS.news);
+      if (raw) return JSON.parse(raw);
+      const seed = [
+        { id: 1, title: 'Barbie Party возвращается', category: 'events', date: '2026-11-14',
+          excerpt: 'Розовый дресс-код, специальный коктейль-бар и DJ-сет до утра.',
+          body: 'Вход по предварительной брони. Столики от 6 человек.', status: 'published' },
+        { id: 2, title: 'Турнир «Космобол Cup»', category: 'bowling', date: '2026-11-08',
+          excerpt: 'Командный турнир на 16 дорожках. Призовой фонд — ужин на 6 персон.',
+          body: 'Регистрация команд по телефону 754-100.', status: 'published' },
+        { id: 3, title: '−20% на боулинг до 18:00', category: 'promo', date: '2026-11-01',
+          excerpt: 'Каждый будний день до шести вечера — скидка на все дорожки.',
+          body: 'Скидка не суммируется с другими акциями.', status: 'published' },
+        { id: 4, title: 'Караоке-баттл: Rock vs Pop', category: 'events', date: '2026-10-25',
+          excerpt: 'Две команды, два жанра и один победитель.', body: '', status: 'draft' },
+        { id: 5, title: 'Розыгрыш билетов в цирк', category: 'promo', date: '2026-10-18',
+          excerpt: 'Для гостей, посетивших GALAXY в выходные.', body: '', status: 'published' },
+        { id: 6, title: 'Новые дорожки с подсветкой', category: 'bowling', date: '2026-10-10',
+          excerpt: 'Обновили освещение и звук в боулинг-центре «Космобол».', body: '', status: 'published' }
+      ];
+      localStorage.setItem(KEYS.news, JSON.stringify(seed));
+      return seed;
+    }
+    function setNews(list) { localStorage.setItem(KEYS.news, JSON.stringify(list)); }
+
+    function getUsers() {
+      const raw = localStorage.getItem(KEYS.users);
+      if (raw) return JSON.parse(raw);
+      const seed = [
+        { id: 1, name: 'Галина Иванова',  email: 'galina@galaxy.ru', role: 'superadmin', status: 'active' },
+        { id: 2, name: 'Пётр Сидоров',    email: 'petr@galaxy.ru',   role: 'admin',      status: 'active' },
+        { id: 3, name: 'Анна Кузнецова',  email: 'anna@galaxy.ru',   role: 'editor',     status: 'active' },
+        { id: 4, name: 'Иван Морозов',    email: 'ivan@galaxy.ru',   role: 'moderator',  status: 'active' },
+        { id: 5, name: 'Ольга Смирнова',  email: 'olga@galaxy.ru',   role: 'viewer',     status: 'active' }
+      ];
+      localStorage.setItem(KEYS.users, JSON.stringify(seed));
+      return seed;
+    }
+    function setUsers(list) { localStorage.setItem(KEYS.users, JSON.stringify(list)); }
+
+    function getSession() {
+      const raw = sessionStorage.getItem(KEYS.session);
+      return raw ? JSON.parse(raw) : null;
+    }
+    function setSession(session) { sessionStorage.setItem(KEYS.session, JSON.stringify(session)); }
+    function clearSession() { sessionStorage.removeItem(KEYS.session); }
+
+    /* ============================================================
+       STATE
+       ============================================================ */
+    const state = {
+      view: 'dashboard',
+      user: null,
+      newsSearch: '',
+      newsCategory: 'all',
+      newsStatus: 'all',
+      usersSearch: ''
+    };
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      })[c]);
+    }
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso + 'T00:00:00');
+      if (isNaN(d)) return iso;
+      return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    function initials(name) {
+      return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+    function can(perm) {
+      if (!state.user) return false;
+      const role = ROLES[state.user.role];
+      if (!role) return false;
+      if (state.user.role === 'superadmin') return true;
+      return role.perms.includes(perm);
+    }
+
+    /* ============================================================
+       TOAST & MODAL
+       ============================================================ */
+    function toast(message, type = 'success') {
+      const el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.textContent = message;
+      document.getElementById('toastWrap').appendChild(el);
+      requestAnimationFrame(() => el.classList.add('show'));
+      setTimeout(() => {
+        el.classList.remove('show');
+        setTimeout(() => el.remove(), 350);
+      }, 2800);
+    }
+
+    function openModal(html) {
+      document.getElementById('modalBox').innerHTML = html;
+      document.getElementById('modalOverlay').classList.remove('hidden');
+    }
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.add('hidden');
+    }
+    function confirmAction(message, onConfirm, label = 'Удалить') {
+      openModal(`
+        <div class="modal-header">
+          <h3>Подтверждение</h3>
+          <button class="icon-btn" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body"><p style="color:var(--text-muted);">${esc(message)}</p></div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+          <button class="btn btn-danger" id="modalConfirm">${esc(label)}</button>
+        </div>
+      `);
+      document.getElementById('modalConfirm').onclick = () => {
+        closeModal();
+        onConfirm();
+      };
+    }
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+      if (e.target.id === 'modalOverlay') closeModal();
+    });
+
+    /* ============================================================
+       AUTH
+       ============================================================ */
+    function login(role, email, name) {
+      const user = { email, name: name || ROLES[role].name, role };
+      setSession(user);
+      state.user = user;
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      state.view = 'dashboard';
+      renderApp();
+      toast(`Добро пожаловать, ${user.name}`);
+    }
+
+    function logout() {
+      clearSession();
+      state.user = null;
+      document.getElementById('app').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      closeModal();
+      document.getElementById('loginForm').reset();
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) {
+        toast('Заполните email и пароль', 'error');
+        return;
+      }
+      const users = getUsers();
+      const found = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (found) {
+        if (found.status === 'blocked') {
+          toast('Аккаунт заблокирован', 'error');
+          return;
+        }
+        login(found.role, found.email, found.name);
+      } else {
+        // Демо-вход: любой email + пароль >= 4 символов → superadmin (для показа)
+        if (password.length >= 4) {
+          login('superadmin', email, email.split('@')[0]);
+        } else {
+          toast('Неверный email или пароль', 'error');
+        }
+      }
+    });
+
+    document.getElementById('quickLogin').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-role]');
+      if (!btn) return;
+      const role = btn.dataset.role;
+      const users = getUsers();
+      const demo = users.find(u => u.role === role);
+      login(role, demo?.email || `${role}@galaxy.ru`, demo?.name || ROLES[role].name);
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      confirmAction('Выйти из панели?', logout, 'Выйти');
+    });
+
+    /* ============================================================
+       NAVIGATION
+       ============================================================ */
+    const NAV_ITEMS = [
+      { id: 'dashboard', label: 'Дашборд',       icon: '📊', perm: 'dashboard' },
+      { id: 'news',      label: 'Новости',       icon: '📰', perm: 'news.view' },
+      { id: 'users',     label: 'Пользователи',  icon: '👥', perm: 'users.view' },
+      { id: 'roles',     label: 'Роли и права',  icon: '🛡️', perm: 'roles.view' },
+      { id: 'settings',  label: 'Настройки',     icon: '⚙️', perm: 'settings' }
+    ];
+
+    function renderNav() {
+      const nav = document.getElementById('navMenu');
+      nav.innerHTML = NAV_ITEMS
+        .filter(item => can(item.perm))
+        .map(item => `
+          <a href="#" class="nav-item ${state.view === item.id ? 'active' : ''}" data-view="${item.id}">
+            <span class="nav-icon">${item.icon}</span>
+            <span>${item.label}</span>
+          </a>
+        `).join('');
+
+      nav.querySelectorAll('[data-view]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          setView(link.dataset.view);
+        });
+      });
+    }
+
+    function renderUserPanel() {
+      const user = state.user;
+      const role = ROLES[user.role];
+      document.getElementById('sidebarUser').innerHTML = `
+        <div class="avatar">${esc(initials(user.name))}</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">${esc(user.name)}</div>
+          <div class="sidebar-user-role">${esc(role.name)}</div>
+        </div>
+      `;
+      const badge = document.getElementById('roleBadge');
+      badge.textContent = role.name;
+      badge.style.color = role.color;
+    }
+
+    function setView(view) {
+      const item = NAV_ITEMS.find(i => i.id === view);
+      if (!item || !can(item.perm)) {
+        toast('Нет доступа к разделу', 'error');
+        return;
+      }
+      state.view = view;
+      document.getElementById('pageTitle').textContent = item.label;
+      renderNav();
+      renderView();
+      closeSidebar();
+    }
+
+    function renderApp() {
+      renderNav();
+      renderUserPanel();
+      const item = NAV_ITEMS.find(i => i.id === state.view) || NAV_ITEMS[0];
+      document.getElementById('pageTitle').textContent = item.label;
+      renderView();
+    }
+
+    /* ============================================================
+       SIDEBAR (mobile)
+       ============================================================ */
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('show');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+    }
+    document.getElementById('hamburger').addEventListener('click', openSidebar);
+    document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+    /* ============================================================
+       VIEW ROUTER
+       ============================================================ */
+    function renderView() {
+      const root = document.getElementById('viewRoot');
+      switch (state.view) {
+        case 'dashboard': root.innerHTML = renderDashboard(); bindDashboard(); break;
+        case 'news':      root.innerHTML = renderNewsView();  bindNewsView();  break;
+        case 'users':     root.innerHTML = renderUsersView(); bindUsersView(); break;
+        case 'roles':     root.innerHTML = renderRolesView(); break;
+        case 'settings':  root.innerHTML = renderSettingsView(); bindSettings(); break;
+        default: root.innerHTML = renderDashboard();
+      }
+    }
+
+    /* ============================================================
+       DASHBOARD
+       ============================================================ */
+    function renderDashboard() {
+      const news = getNews();
+      const users = getUsers();
+      const published = news.filter(n => n.status === 'published').length;
+      const drafts = news.filter(n => n.status === 'draft').length;
+
+      const catCounts = Object.keys(CATEGORIES).map(k => ({
+        key: k, label: CATEGORIES[k], count: news.filter(n => n.category === k).length
+      }));
+      const maxCount = Math.max(1, ...catCounts.map(c => c.count));
+
+      return `
+        <div class="stats-grid">
+          <div class="stat-card" style="--stat-color: var(--accent-1);">
+            <div class="stat-label">Всего новостей</div>
+            <div class="stat-value">${news.length}</div>
+            <div class="stat-delta">↑ актуально</div>
+          </div>
+          <div class="stat-card" style="--stat-color: var(--success);">
+            <div class="stat-label">Опубликовано</div>
+            <div class="stat-value">${published}</div>
+            <div class="stat-delta">на сайте</div>
+          </div>
+          <div class="stat-card" style="--stat-color: var(--accent-4);">
+            <div class="stat-label">Черновиков</div>
+            <div class="stat-value">${drafts}</div>
+            <div class="stat-delta" style="color:var(--accent-4);">в работе</div>
+          </div>
+          <div class="stat-card" style="--stat-color: var(--accent-3);">
+            <div class="stat-label">Пользователей</div>
+            <div class="stat-value">${users.length}</div>
+            <div class="stat-delta">аккаунтов</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Новости по категориям</div>
+          </div>
+          <div class="panel-body">
+            ${catCounts.map(c => `
+              <div class="chart-row">
+                <div class="chart-label">${c.label}</div>
+                <div class="chart-bar"><div style="width:${(c.count / maxCount) * 100}%"></div></div>
+                <div class="chart-value">${c.count}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Последние новости</div>
+            ${can('news.view') ? '<a href="#" class="btn btn-ghost" style="padding:7px 16px;font-size:0.8rem;" id="goNews">Все новости →</a>' : ''}
+          </div>
+          <div class="panel-body" style="padding:0;">
+            ${news.slice(0, 5).map(n => `
+              <div style="display:flex;justify-content:space-between;gap:14px;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                <div style="min-width:0;">
+                  <div style="font-weight:600;font-size:0.9rem;">${esc(n.title)}</div>
+                  <div style="font-size:0.76rem;color:var(--text-muted);margin-top:2px;">${formatDate(n.date)} · ${CATEGORIES[n.category]}</div>
+                </div>
+                <span class="status-pill status-${n.status}">${STATUS[n.status]}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+    function bindDashboard() {
+      const btn = document.getElementById('goNews');
+      if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); setView('news'); });
+    }
+
+    /* ============================================================
+       NEWS VIEW
+       ============================================================ */
+    function renderNewsView() {
+      return `
+        <div class="toolbar">
+          <div class="search">
+            <input type="text" id="newsSearch" placeholder="Поиск по заголовку..." value="${esc(state.newsSearch)}" />
+          </div>
+          <select id="newsCategory">
+            <option value="all">Все категории</option>
+            ${Object.entries(CATEGORIES).map(([k,v]) => `<option value="${k}" ${state.newsCategory===k?'selected':''}>${v}</option>`).join('')}
+          </select>
+          <select id="newsStatus">
+            <option value="all">Все статусы</option>
+            <option value="published" ${state.newsStatus==='published'?'selected':''}>Опубликовано</option>
+            <option value="draft" ${state.newsStatus==='draft'?'selected':''}>Черновик</option>
+          </select>
+          ${can('news.create') ? '<button class="btn btn-primary" id="addNewsBtn">+ Новая новость</button>' : ''}
+        </div>
+        <div id="newsListWrap"></div>
+      `;
+    }
+
+    function renderNewsList() {
+      let news = getNews();
+      if (state.newsSearch) {
+        const q = state.newsSearch.toLowerCase();
+        news = news.filter(n => n.title.toLowerCase().includes(q) || n.excerpt.toLowerCase().includes(q));
+      }
+      if (state.newsCategory !== 'all') news = news.filter(n => n.category === state.newsCategory);
+      if (state.newsStatus !== 'all') news = news.filter(n => n.status === state.newsStatus);
+
+      const wrap = document.getElementById('newsListWrap');
+      if (!news.length) {
+        wrap.innerHTML = `<div class="table-wrap"><div class="empty"><div class="empty-icon">📰</div><p>Новостей не найдено</p></div></div>`;
+        return;
+      }
+
+      wrap.innerHTML = `
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Заголовок</th>
+                <th>Категория</th>
+                <th>Дата</th>
+                <th>Статус</th>
+                <th style="text-align:right;">Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${news.map(n => `
+                <tr>
+                  <td><strong>${esc(n.title)}</strong><small>${esc(n.excerpt)}</small></td>
+                  <td><span class="tag tag-${n.category}">${CATEGORIES[n.category]}</span></td>
+                  <td>${formatDate(n.date)}</td>
+                  <td><span class="status-pill status-${n.status}">${STATUS[n.status]}</span></td>
+                  <td>
+                    <div class="cell-actions">
+                      ${can('news.edit') ? `<button class="icon-btn" data-edit="${n.id}" title="Редактировать">✎</button>` : ''}
+                      ${can('news.delete') ? `<button class="icon-btn del" data-del="${n.id}" title="Удалить">🗑</button>` : ''}
+                      ${!can('news.edit') && !can('news.delete') ? '<span style="color:var(--text-muted);font-size:0.78rem;">—</span>' : ''}
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      wrap.querySelectorAll('[data-edit]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const item = getNews().find(n => n.id == btn.dataset.edit);
+          if (item) openNewsForm(item);
+        });
+      });
+      wrap.querySelectorAll('[data-del]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.dataset.del);
+          confirmAction('Удалить эту новость безвозвратно?', () => {
+            setNews(getNews().filter(n => n.id !== id));
+            toast('Новость удалена');
+            renderNewsList();
+          });
+        });
+      });
+    }
+
+    function bindNewsView() {
+      renderNewsList();
+      document.getElementById('newsSearch').addEventListener('input', (e) => {
+        state.newsSearch = e.target.value;
+        renderNewsList();
+      });
+      document.getElementById('newsCategory').addEventListener('change', (e) => {
+        state.newsCategory = e.target.value;
+        renderNewsList();
+      });
+      document.getElementById('newsStatus').addEventListener('change', (e) => {
+        state.newsStatus = e.target.value;
+        renderNewsList();
+      });
+      const addBtn = document.getElementById('addNewsBtn');
+      if (addBtn) addBtn.addEventListener('click', () => openNewsForm(null));
+    }
+
+    /* ============================================================
+       NEWS FORM
+       ============================================================ */
+    function openNewsForm(item) {
+      const isEdit = !!item;
+      if (isEdit && !can('news.edit')) { toast('Нет прав на редактирование', 'error'); return; }
+      if (!isEdit && !can('news.create')) { toast('Нет прав на создание', 'error'); return; }
+
+      openModal(`
+        <div class="modal-header">
+          <h3>${isEdit ? 'Редактировать новость' : 'Новая новость'}</h3>
+          <button class="icon-btn" onclick="closeModal()">✕</button>
+        </div>
+        <form id="newsForm" class="modal-body" onsubmit="return false;">
+          <div class="form-field">
+            <label>Заголовок</label>
+            <input name="title" value="${esc(item?.title || '')}" required />
+          </div>
+          <div class="form-field">
+            <label>Категория</label>
+            <select name="category">
+              ${Object.entries(CATEGORIES).map(([k,v]) =>
+                `<option value="${k}" ${item?.category===k?'selected':''}>${v}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Дата</label>
+            <input type="date" name="date" value="${esc(item?.date || new Date().toISOString().slice(0,10))}" required />
+          </div>
+          <div class="form-field">
+            <label>Краткое описание</label>
+            <textarea name="excerpt" rows="2" required>${esc(item?.excerpt || '')}</textarea>
+          </div>
+          <div class="form-field">
+            <label>Полный текст</label>
+            <textarea name="body" rows="4">${esc(item?.body || '')}</textarea>
+          </div>
+          <div class="form-field">
+            <label>Статус</label>
+            <select name="status">
+              <option value="published" ${item?.status==='published'?'selected':''}>Опубликовано</option>
+              <option value="draft" ${item?.status==='draft'?'selected':''}>Черновик</option>
+            </select>
+          </div>
+        </form>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+          <button class="btn btn-primary" onclick="saveNews(${item?.id || 'null'})">Сохранить</button>
+        </div>
+      `);
+    }
+
+    function saveNews(id) {
+      const form = document.getElementById('newsForm');
+      const fd = new FormData(form);
+      const title = String(fd.get('title') || '').trim();
+      const excerpt = String(fd.get('excerpt') || '').trim();
+      if (!title) { toast('Введите заголовок', 'error'); return; }
+      if (!excerpt) { toast('Введите краткое описание', 'error'); return; }
+
+      const data = {
+        title,
+        category: fd.get('category'),
+        date: fd.get('date'),
+        excerpt,
+        body: String(fd.get('body') || '').trim(),
+        status: fd.get('status')
+      };
+
+      const news = getNews();
+      if (id) {
+        const idx = news.findIndex(n => n.id === id);
+        if (idx > -1) news[idx] = { ...news[idx], ...data };
+        toast('Новость обновлена');
+      } else {
+        news.unshift({ id: Date.now(), ...data });
+        toast('Новость создана');
+      }
+      setNews(news);
+      closeModal();
+      if (state.view === 'news') renderNewsList();
+      if (state.view === 'dashboard') renderView();
+    }
+
+    /* ============================================================
+       USERS VIEW
+       ============================================================ */
+    function renderUsersView() {
+      return `
+        <div class="toolbar">
+          <div class="search">
+            <input type="text" id="usersSearch" placeholder="Поиск по имени или email..." value="${esc(state.usersSearch)}" />
+          </div>
+          ${can('users.create') ? '<button class="btn btn-primary" id="addUserBtn">+ Добавить пользователя</button>' : ''}
+        </div>
+        <div id="usersListWrap"></div>
+      `;
+    }
+
+    function renderUsersList() {
+      let users = getUsers();
+      if (state.usersSearch) {
+        const q = state.usersSearch.toLowerCase();
+        users = users.filter(u =>
+          u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+      }
+
+      const wrap = document.getElementById('usersListWrap');
+      if (!users.length) {
+        wrap.innerHTML = `<div class="table-wrap"><div class="empty"><div class="empty-icon">👥</div><p>Пользователей не найдено</p></div></div>`;
+        return;
+      }
+
+      wrap.innerHTML = `
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Пользователь</th>
+                <th>Роль</th>
+                <th>Статус</th>
+                <th style="text-align:right;">Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${users.map(u => {
+                const role = ROLES[u.role];
+                const isSelf = state.user.email.toLowerCase() === u.email.toLowerCase();
+                return `
+                  <tr>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="avatar" style="width:34px;height:34px;font-size:0.8rem;background:linear-gradient(135deg, ${role.color}, var(--accent-1));">${esc(initials(u.name))}</div>
+                        <div>
+                          <strong>${esc(u.name)} ${isSelf ? '<span style="color:var(--accent-3);font-size:0.7rem;">(вы)</span>' : ''}</strong>
+                          <small>${esc(u.email)}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      ${can('users.edit') && !isSelf ? `
+                        <select data-role-select="${u.id}" style="padding:6px 10px;font-size:0.8rem;width:auto;">
+                          ${Object.entries(ROLES).map(([k, r]) =>
+                            `<option value="${k}" ${u.role===k?'selected':''}>${r.name}</option>`).join('')}
+                        </select>
+                      ` : `<span style="color:${role.color};font-weight:600;">${role.name}</span>`}
+                    </td>
+                    <td><span class="status-pill status-${u.status}">${u.status === 'active' ? 'Активен' : 'Заблокирован'}</span></td>
+                    <td>
+                      <div class="cell-actions">
+                        ${can('users.edit') && !isSelf ? `
+                          <button class="icon-btn" data-toggle="${u.id}" title="${u.status==='active'?'Заблокировать':'Разблокировать'}">
+                            ${u.status === 'active' ? '🔒' : '🔓'}
+                          </button>
+                        ` : ''}
+                        ${can('users.delete') && !isSelf ? `
+                          <button class="icon-btn del" data-del-user="${u.id}" title="Удалить">🗑</button>
+                        ` : ''}
+                        ${(isSelf || (!can('users.edit') && !can('users.delete'))) ? '<span style="color:var(--text-muted);font-size:0.78rem;">—</span>' : ''}
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      wrap.querySelectorAll('[data-role-select]').forEach(sel => {
+        sel.addEventListener('change', () => {
+          const id = Number(sel.dataset.roleSelect);
+          const users = getUsers();
+          const u = users.find(x => x.id === id);
+          if (u) {
+            u.role = sel.value;
+            setUsers(users);
+            toast(`Роль обновлена: ${ROLES[sel.value].name}`);
+            renderUsersList();
+          }
+        });
+      });
+
+      wrap.querySelectorAll('[data-toggle]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.dataset.toggle);
+          const users = getUsers();
+          const u = users.find(x => x.id === id);
+          if (u) {
+            u.status = u.status === 'active' ? 'blocked' : 'active';
+            setUsers(users);
+            toast(u.status === 'active' ? 'Пользователь разблокирован' : 'Пользователь заблокирован');
+            renderUsersList();
+          }
+        });
+      });
+
+      wrap.querySelectorAll('[data-del-user]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.dataset.delUser);
+          const u = getUsers().find(x => x.id === id);
+          if (!u) return;
+          confirmAction(`Удалить пользователя «${u.name}»?`, () => {
+            setUsers(getUsers().filter(x => x.id !== id));
+            toast('Пользователь удалён');
+            renderUsersList();
+          });
+        });
+      });
+    }
+
+    function bindUsersView() {
+      renderUsersList();
+      document.getElementById('usersSearch').addEventListener('input', (e) => {
+        state.usersSearch = e.target.value;
+        renderUsersList();
+      });
+      const addBtn = document.getElementById('addUserBtn');
+      if (addBtn) addBtn.addEventListener('click', openUserForm);
+    }
+
+    function openUserForm() {
+      if (!can('users.create')) { toast('Нет прав', 'error'); return; }
+      openModal(`
+        <div class="modal-header">
+          <h3>Новый пользователь</h3>
+          <button class="icon-btn" onclick="closeModal()">✕</button>
+        </div>
+        <form id="userForm" class="modal-body" onsubmit="return false;">
+          <div class="form-field">
+            <label>Имя</label>
+            <input name="name" required placeholder="Иван Иванов" />
+          </div>
+          <div class="form-field">
+            <label>Email</label>
+            <input name="email" type="email" required placeholder="ivan@galaxy.ru" />
+          </div>
+          <div class="form-field">
+            <label>Роль</label>
+            <select name="role">
+              ${Object.entries(ROLES).map(([k, r]) =>
+                `<option value="${k}">${r.name}</option>`).join('')}
+            </select>
+          </div>
+        </form>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+          <button class="btn btn-primary" onclick="saveUser()">Создать</button>
+        </div>
+      `);
+    }
+
+    function saveUser() {
+      const form = document.getElementById('userForm');
+      const fd = new FormData(form);
+      const name = String(fd.get('name') || '').trim();
+      const email = String(fd.get('email') || '').trim();
+      const role = fd.get('role');
+
+      if (!name) { toast('Введите имя', 'error'); return; }
+      if (!email) { toast('Введите email', 'error'); return; }
+
+      const users = getUsers();
+      if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+        toast('Email уже используется', 'error');
+        return;
+      }
+      users.push({ id: Date.now(), name, email, role, status: 'active' });
+      setUsers(users);
+      toast('Пользователь создан');
+      closeModal();
+      renderUsersList();
+    }
+
+    /* ============================================================
+       ROLES VIEW
+       ============================================================ */
+    function renderRolesView() {
+      const users = getUsers();
+      const roleCounts = {};
+      Object.keys(ROLES).forEach(k => roleCounts[k] = 0);
+      users.forEach(u => { if (roleCounts[u.role] !== undefined) roleCounts[u.role]++; });
+
+      return `
+        <div class="roles-grid">
+          ${Object.entries(ROLES).map(([key, r]) => `
+            <div class="role-card" style="--role-color:${r.color};">
+              <div class="role-card-name">${esc(r.name)}</div>
+              <div class="role-card-desc">${esc(r.desc)}</div>
+              <span class="role-card-count">👤 ${roleCounts[key]} польз.</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Матрица прав</div></div>
+          <div style="overflow-x:auto;">
+            <table class="perm-table">
+              <thead>
+                <tr>
+                  <th>Право</th>
+                  ${Object.entries(ROLES).map(([k, r]) =>
+                    `<th style="color:${r.color};">${esc(r.name)}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${ALL_PERMS.map(p => `
+                  <tr>
+                    <td>${esc(p.label)}</td>
+                    ${Object.entries(ROLES).map(([k, r]) => {
+                      const has = k === 'superadmin' || r.perms.includes(p.key);
+                      return `<td>${has ? '<span class="perm-yes">✓</span>' : '<span class="perm-no">—</span>'}</td>`;
+                    }).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ============================================================
+       SETTINGS
+       ============================================================ */
+    function renderSettingsView() {
+      return `
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Настройки системы</div></div>
+          <div class="panel-body">
+            <div class="form-field">
+              <label>Название клуба</label>
+              <input value="CDC GALAXY" />
+            </div>
+            <div class="form-field">
+              <label>Телефон боулинга</label>
+              <input value="754-100" />
+            </div>
+            <div class="form-field">
+              <label>Телефон КДЦ</label>
+              <input value="751-100" />
+            </div>
+            <div class="form-field">
+              <label>Email</label>
+              <input value="galaxy-show@mail.ru" />
+            </div>
+            <button class="btn btn-primary" onclick="toast('Настройки сохранены')">Сохранить</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Хранилище</div></div>
+          <div class="panel-body" style="font-size:0.88rem;color:var(--text-muted);">
+            <p>Новости хранятся под ключом <code style="color:var(--accent-3);">galaxy_news</code>, пользователи — <code style="color:var(--accent-3);">galaxy_users</code>, сессия — в <code style="color:var(--accent-3);">sessionStorage</code>.</p>
+            <p style="margin-top:10px;">Чтобы лендинг показывал те же новости, добавьте на него чтение из <code style="color:var(--accent-3);">localStorage.getItem('galaxy_news')</code>.</p>
+            <button class="btn btn-danger" style="margin-top:16px;" onclick="resetDemo()">Сбросить демо-данные</button>
+          </div>
+        </div>
+      `;
+    }
+    function bindSettings() {}
+    function resetDemo() {
+      confirmAction('Сбросить все новости и пользователей к демо-набору?', () => {
+        localStorage.removeItem(KEYS.news);
+        localStorage.removeItem(KEYS.users);
+        toast('Демо-данные восстановлены');
+        renderView();
+      }, 'Сбросить');
+    }
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    (function init() {
+      // Прогрев хранилища
+      getNews();
+      getUsers();
+
+      const session = getSession();
+      if (session) {
+        state.user = session;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        renderApp();
+      }
+    })();
+
+    // Экранирование для inline-обработчиков
+    window.closeModal = closeModal;
+    window.saveNews = saveNews;
+    window.saveUser = saveUser;
+    window.resetDemo = resetDemo;
+    window.toast = toast;
+  </script>
+</body>
+</html>
