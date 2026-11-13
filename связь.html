@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CDC GALAXY — Обратная связь</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-deep: #070b14;
+      --bg-dark: #0d1220;
+      --glass: rgba(255, 255, 255, 0.06);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --text-primary: #f1f5ff;
+      --text-muted: #9aa8c7;
+      --accent-1: #a855f7;
+      --accent-2: #ec4899;
+      --accent-3: #22d3ee;
+      --accent-4: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 24px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    html, body { min-height: 100%; }
+    body {
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(168, 85, 247, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(34, 211, 238, 0.18) 0%, transparent 50%),
+        var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+    button { cursor: pointer; border: none; background: none; }
+
+    .container { width: min(720px, 92%); margin-inline: auto; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      font-weight: 900; font-size: 1.1rem; color: #fff;
+      box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+    }
+    .brand strong { display: block; font-size: 0.95rem; }
+    .brand small { display: block; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.05em; }
+    .topbar a.back {
+      font-size: 0.85rem; color: var(--text-muted);
+      padding: 8px 16px; border-radius: 100px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      transition: all 0.2s ease;
+    }
+    .topbar a.back:hover { color: var(--text-primary); background: rgba(255,255,255,0.1); }
+
+    main { flex: 1; padding: 48px 0 60px; }
+    .section-label {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent-3);
+      margin-bottom: 14px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 100px;
+      background: rgba(34, 211, 238, 0.06);
+    }
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-1) 60%, var(--accent-2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .lead { color: var(--text-muted); margin-bottom: 32px; max-width: 560px; }
+
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-field { margin-bottom: 18px; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-1);
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.18);
+    }
+    textarea { resize: vertical; min-height: 120px; }
+    select option { background: var(--bg-dark); color: var(--text-primary); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 28px; border-radius: 100px;
+      font-weight: 700; font-size: 0.95rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background-position 0.5s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(110deg, var(--accent-1), var(--accent-2), var(--accent-1));
+      background-size: 200% 200%;
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(168, 85, 247, 0.35);
+    }
+    .btn-primary:hover {
+      background-position: 100% 50%;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(236, 72, 153, 0.45);
+    }
+
+    .hint { font-size: 0.76rem; color: var(--text-muted); margin-top: 14px; text-align: center; }
+
+    .toast-wrap {
+      position: fixed; top: 20px; right: 20px; z-index: 400;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    }
+    .toast {
+      padding: 12px 20px; border-radius: 12px;
+      background: rgba(13, 18, 32, 0.96);
+      border: 1px solid var(--glass-border);
+      border-left: 3px solid var(--accent-1);
+      font-size: 0.86rem; font-weight: 500;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(.22,1,.36,1);
+      max-width: 340px;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
+
+    footer { padding: 24px 0; border-top: 1px solid var(--glass-border); }
+    footer .container {
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+      font-size: 0.78rem; color: var(--text-muted);
+    }
+
+    @media (max-width: 560px) {
+      .form-row { grid-template-columns: 1fr; }
+      .card { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="container">
+    <div class="topbar">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">G</span>
+        <span>
+          <strong>CDC GALAXY</strong>
+          <small>Обратная связь</small>
+        </span>
+      </a>
+      <a class="back" href="index.html">← На главную</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <span class="section-label">Напишите нам</span>
+    <h1>Обратная связь</h1>
+    <p class="lead">
+      Вопрос по брони, идея для вечеринки или отзыв — оставьте сообщение,
+      и мы вернёмся к вам. Чем подробнее, тем быстрее поможем.
+    </p>
+
+    <div class="card">
+      <form id="feedbackForm" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="fbName">Имя *</label>
+            <input id="fbName" name="name" type="text" placeholder="Как к вам обращаться" required maxlength="60" />
+          </div>
+          <div class="form-field">
+            <label for="fbContact">Телефон или email *</label>
+            <input id="fbContact" name="contact" type="text" placeholder="754-100 или mail@example.ru" required maxlength="80" />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="fbTopic">Тема</label>
+          <select id="fbTopic" name="topic">
+            <option value="booking">Бронирование</option>
+            <option value="event">Мероприятие / вечеринка</option>
+            <option value="feedback">Отзыв</option>
+            <option value="question">Вопрос</option>
+            <option value="other">Другое</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="fbMessage">Сообщение *</label>
+          <textarea id="fbMessage" name="message" placeholder="Опишите ваш вопрос или пожелание..." required maxlength="1000"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Отправить сообщение →</button>
+        <p class="hint">Нажимая «Отправить», вы соглашаетесь на обработку данных для ответа на обращение. 18+</p>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 CDC GALAXY · Якутск, ул. Красильникова, 15</span>
+      <span>754-100 · 751-100 · galaxy-show@mail.ru</span>
+    </div>
+  </footer>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script>
+    const FB_KEY = 'galaxy_feedback';
+
+    function getFeedback() {
+      try { return JSON.parse(localStorage.getItem(FB_KEY)) || []; }
+      catch { return []; }
+    }
+    function setFeedback(list) {
+      localStorage.setItem(FB_KEY, JSON.stringify(list));
+    }
+
+    function toast(message, type = 'success') {
+      const el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.textContent = message;
+      document.getElementById('toastWrap').appendChild(el);
+      requestAnimationFrame(() => el.classList.add('show'));
+      setTimeout(() => {
+        el.classList.remove('show');
+        setTimeout(() => el.remove(), 350);
+      }, 3000);
+    }
+
+    document.getElementById('feedbackForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const name = form.name.value.trim();
+      const contact = form.contact.value.trim();
+      const message = form.message.value.trim();
+      const topic = form.topic.value;
+
+      if (!name)    return toast('Укажите имя', 'error');
+      if (!contact) return toast('Укажите телефон или email', 'error');
+      if (message.length < 5) return toast('Сообщение слишком короткое', 'error');
+
+      const list = getFeedback();
+      list.unshift({
+        id: Date.now(),
+        name,
+        contact,
+        topic,
+        message,
+        createdAt: new Date().toISOString(),
+        status: 'new'
+      });
+      setFeedback(list);
+
+      form.reset();
+      toast('Спасибо! Сообщение отправлено.');
+    });
+  </script>
+</body>
+</html>
